@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Evan 的 Pages 總索引</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; font-family: system-ui, sans-serif; background:#0f1419; color:#e7ecf1;
+         min-height:100vh; padding:24px 16px 40px; }
+  .wrap { max-width:560px; margin:0 auto; }
+  h1 { margin:0 0 6px; font-size:1.25rem; }
+  .sub { color:#8b9bb0; font-size:.88rem; margin-bottom:20px; line-height:1.45; }
+  a.card { display:block; text-decoration:none; color:inherit; background:#1a2330;
+           border-radius:14px; padding:14px 16px; margin-bottom:10px;
+           border:1px solid #243044; }
+  a.card:active { background:#212c3c; }
+  .top { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .name { font-weight:600; font-size:1.02rem; }
+  .dot { font-size:.75rem; color:#9fb3c8; }
+  .dot.up { color:#6dd48a; }
+  .dot.down { color:#ff8e8e; }
+  .dot.checking { color:#c9a45c; }
+  .desc { color:#8b9bb0; font-size:.86rem; margin-top:4px; }
+  .meta { color:#6b7c90; font-size:.78rem; margin-top:8px; font-family: ui-monospace, monospace; }
+  h2.cat { margin:18px 0 8px; font-size:.85rem; color:#9fb3c8; font-weight:600;
+           letter-spacing:.04em; border-bottom:1px solid #243044; padding-bottom:4px; }
+  h2.cat .cnt { float:right; color:#6b7c90; font-weight:400; font-size:.78rem; }
+  .foot { margin-top:22px; color:#5b6c80; font-size:.76rem; line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Evan 的 Pages 總索引</h1>
+  <div class="sub" id="sub">GitHub Pages 全記錄。綠＝現在抓得到（本頁即時實測）。載入中…</div>
+
+  <h2 class="cat">旅遊・外出<span class="cnt" id="cnt-travel"></span></h2>
+  <a class="card" href="/japan-snow/"><div class="top"><span class="name">日本雪場</span><span class="dot checking" data-dot="japan-snow">● 檢測中</span></div><div class="desc">積雪與降雪預報（resorts.json 票價連結）</div><div class="meta">/japan-snow/</div></a>
+  <a class="card" href="/pikmin-bloom-coords/"><div class="top"><span class="name">Bloom Pin</span><span class="dot checking" data-dot="pikmin-bloom-coords">● 檢測中</span></div><div class="desc">Pikmin Bloom 座標・Pin 資料</div><div class="meta">/pikmin-bloom-coords/</div></a>
+
+  <h2 class="cat">生活管理<span class="cnt" id="cnt-life"></span></h2>
+  <a class="card" href="/pantry-tracker/"><div class="top"><span class="name">食材櫃</span><span class="dot checking" data-dot="pantry-tracker">● 檢測中</span></div><div class="desc">冰箱食材追蹤 PWA（Drive 家庭同步）</div><div class="meta">/pantry-tracker/</div></a>
+  <a class="card" href="/pet-health-app/"><div class="top"><span class="name">寵物健康</span><span class="dot checking" data-dot="pet-health-app">● 檢測中</span></div><div class="desc">貓咪健康記錄 PWA</div><div class="meta">/pet-health-app/</div></a>
+
+  <h2 class="cat">學習・遊戲<span class="cnt" id="cnt-study"></span></h2>
+  <a class="card" href="/en-flashcards/"><div class="top"><span class="name">英文詞卡</span><span class="dot checking" data-dot="en-flashcards">● 檢測中</span></div><div class="desc">英文單字學習卡</div><div class="meta">/en-flashcards/</div></a>
+  <a class="card" href="/sgsz-planner/"><div class="top"><span class="name">配將簿</span><span class="dot checking" data-dot="sgsz-planner">● 檢測中</span></div><div class="desc">三國戰配將規劃</div><div class="meta">/sgsz-planner/</div></a>
+
+  <h2 class="cat">工具<span class="cnt" id="cnt-tools"></span></h2>
+  <a class="card" href="/hermes-oauth/"><div class="top"><span class="name">Evan Hermes</span><span class="dot checking" data-dot="hermes-oauth">● 檢測中</span></div><div class="desc">Hermes OAuth 轉發頁</div><div class="meta">/hermes-oauth/</div></a>
+
+  <div class="foot">本頁與各站都是 GitHub Pages（repo <code>evancho/evancho.github.io</code>）。<br/>
+  狀態是用你瀏覽器的即時連線測的，不是伺服器記錄；剛 push 完要等 Pages 部署好才會變綠。</div>
+</div>
+
+<script>
+const SITES = [
+  {slug:"japan-snow", cat:"travel"}, {slug:"pikmin-bloom-coords", cat:"travel"},
+  {slug:"pantry-tracker", cat:"life"}, {slug:"pet-health-app", cat:"life"},
+  {slug:"en-flashcards", cat:"study"}, {slug:"sgsz-planner", cat:"study"},
+  {slug:"hermes-oauth", cat:"tools"},
+];
+const cats = {travel:[0,0], life:[0,0], study:[0,0], tools:[0,0]}; // [total, up]
+SITES.forEach(s => cats[s.cat][0]++);
+
+let up = 0;
+SITES.forEach(s => {
+  fetch("/" + s.slug + "/?_probe=" + Date.now(), {cache:"no-store"})
+    .then(r => { if (r.ok) { up++; cats[s.cat][1]++; setDot(s.slug, true); }
+                 else setDot(s.slug, false, "HTTP " + r.status); })
+    .catch(() => setDot(s.slug, false))
+    .finally(() => render());
+});
+
+function setDot(slug, ok, note) {
+  const el = document.querySelector('[data-dot="' + slug + '"]');
+  if (!el) return;
+  el.className = "dot " + (ok ? "up" : "down");
+  el.textContent = ok ? "● 在線" : (note ? "● " + note : "● 離線");
+}
+
+function render() {
+  for (const [c,[t,u]] of Object.entries(cats)) {
+    const el = document.getElementById("cnt-" + c);
+    if (el) el.textContent = u + "/" + t + " 在線";
+  }
+  document.getElementById("sub").textContent =
+    "GitHub Pages 全記錄。綠＝現在抓得到（本頁即時實測）。共 " + SITES.length + " 支，" +
+    (up < SITES.length ? "檢測中…" : up + " 支在線。") +
+    " 檢測時間 " + new Date().toLocaleTimeString("zh-TW", {timeZone:"Asia/Taipei"}) + "。";
+}
+</script>
+</body>
+</html>
